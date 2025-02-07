@@ -1,0 +1,117 @@
+---
+title: "Final Report"
+author: "Liz"
+date: "2025-02-07"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2)
+library(rvest)
+library(tidyverse)
+library(dplyr)
+library(tidyr)
+library(readr)
+library(knitr) 
+```
+
+## Data Scraping
+
+**Explanation**
+
+I began by selecting the "All-Time Olympic Games Medal Table" webpage on Wikipedia as my data source. This webpage contains several tables summarizing Olympic performances of countries, including participation counts and medal tallies for the Summer, Winter, and combined Olympic Games. 
+
+To start, I saved the URL of the webpage and read its HTML content into R using the read_html() function. This allowed me to access and work with the entire structure of the webpage. Then, I identified all the tables on the page by targeting elements with the CSS class "wikitable", which is commonly used for structured tables on Wikipedia. Using the html_table() function, I converted these tables into a list of data frames, with each data frame corresponding to one table on the webpage.
+
+
+```{r}
+# Save the URL and scrape the webpage
+url <- "https://en.wikipedia.org/wiki/All-time_Olympic_Games_medal_table"
+olympic <- read_html(x = url)
+olympic
+
+# Extract all tables with the class "wikitable"
+tables <- html_elements(olympic, css = "table.wikitable")
+
+# Convert all table nodes into a list of data frames
+all_tables <- html_table(tables, fill = TRUE)
+
+```
+
+## Extracting Tables 
+
+**Explanation**
+
+From this webpage, I identified and extracted three relevant tables for my analysis: the all-time combined Olympic medal table, the Summer Olympics medal table, and the Winter Olympics medal table.
+
+```{r}
+# Extract the first table (All-time Olympic Games medal table)
+colnames(all_tables[[1]])
+first_table <- all_tables[[1]]
+
+# Rename columns for the first table
+colnames(first_table) <- c(
+  "Team",
+  "Summer_No",
+  "Summer_Gold",
+  "Summer_Silver",
+  "Summer_Bronze",
+  "Summer_Total",
+  "Winter_No",
+  "Winter_Gold",
+  "Winter_Silver",
+  "Winter_Bronze",
+  "Winter_Total",
+  "Combined_No",
+  "Combined_Gold",
+  "Combined_Silver",
+  "Combined_Bronze",
+  "Combined_Total"
+)
+
+# Remove the first row (unwanted header)
+first_table_cleaned <- first_table[-1, ] %>%
+  mutate(Team = str_extract(Team, "^[^\\(]+\\s*\\([^\\)]+\\)")) %>%
+  mutate(Team = str_trim(Team)) 
+
+# Save the cleaned table to a CSV
+write_csv(first_table_cleaned, "all_time_olympics_medal_table.csv")
+
+# Display the table
+print(first_table_cleaned)
+```
+
+```{r}
+# Inspect tables to find tables I want to extract
+for (i in seq_along(all_tables)) {
+  print(paste("Table", i))
+  print((all_tables[[i]]))
+}
+
+# Extract the Winter Olympics table
+winter_olympics_table <- all_tables[[12]]
+
+# Rename columns for the Winter Olympics table
+colnames(winter_olympics_table) <- c("Rank", "NOC", "Gold", "Silver", "Bronze", "Total")
+
+# Save the cleaned table to a CSV
+write_csv(winter_olympics_table, "winter_olympics_medal_table.csv")
+
+# Display the table
+print(winter_olympics_table)
+```
+
+```{r}
+# Extract the summer Olympics table 
+summer_olympics_table <- all_tables[[11]]
+
+# Rename columns for the summer Olympics table
+colnames(summer_olympics_table) <- c("Rank", "NOC", "Gold", "Silver", "Bronze", "Total")
+
+# Save the cleaned table to a CSV
+write_csv(summer_olympics_table, "summer_olympics_medal_table.csv")
+
+# Display the table
+print(summer_olympics_table)
+```
