@@ -115,3 +115,212 @@ write_csv(summer_olympics_table, "summer_olympics_medal_table.csv")
 # Display the table
 print(summer_olympics_table)
 ```
+## Data Analysis
+
+**Question 1: Which country has participated in the most Olympics (combined total), and how do its Summer and Winter Olympic medal counts (gold, silver, bronze) compare?** 
+
+```{r}
+# Find all countries with the most Olympic participations, excluding the totals
+top_countries <- first_table_cleaned %>%
+  mutate(Combined_No = as.numeric(Combined_No)) %>%
+  filter(!is.na(Team)) %>% 
+  filter(Team != "Totals") %>%
+  filter(Combined_No == max(Combined_No, na.rm = TRUE))
+
+# Display the countries
+print(top_countries)
+
+# Reshape the data for visualization
+top_countries_long <- top_countries %>%
+  select(Team, Summer_Gold, Summer_Silver, Summer_Bronze, Winter_Gold, Winter_Silver, Winter_Bronze) %>%
+  pivot_longer(
+    cols = -Team,
+    names_to = c("Season", "Medal_Type"),
+    names_sep = "_", 
+    values_to = "Count"
+  ) %>%
+  mutate(
+    Count = as.numeric(Count), 
+    Medal_Type = factor(Medal_Type, levels = c("Gold", "Silver", "Bronze")) 
+  )
+
+# Bar Plot for Summer vs Winter medals
+ggplot(top_countries_long, aes(x = Medal_Type, y = Count, fill = Medal_Type)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  facet_wrap(~ Team) + 
+  scale_y_continuous(breaks = scales::pretty_breaks(n = 10)) + 
+  scale_fill_manual(values = c("Gold" = "gold", "Silver" = "gray70", "Bronze" = "sienna")) + 
+  labs(
+    title = "Summer vs Winter Olympic Medals for Top Countries",
+    x = "Medal Type",
+    y = "Medal Count",
+    fill = "Medal Type"
+  ) +
+  theme_minimal()
+```
+
+**Interpretation**
+
+France, Great Britain, and Switzerland share the distinction of having the most Olympic participations, each competing in 54 Olympic Games (combined Summer and Winter). Despite their similar participation records, their performances in terms of medals differ significantly. Great Britain stands out as the strongest performer, particularly in the Summer Olympics, where it has amassed 298 gold, 339 silver, and 343 bronze medals. This makes Great Britain the leader in medal achievements among the three nations.
+
+France follows closely behind Great Britain in terms of medal counts. In the Summer Olympics, France has earned 239 gold, 278 silver, and 299 bronze medals. While it lags behind Great Britain in overall medal tallies, France still demonstrates a strong performance and remains a major contender in the Summer Games. Switzerland, on the other hand, is the weakest performer among the three. Although Switzerland's performance is relatively balanced between Summer and Winter Olympics, its total medal count is significantly lower than that of both France and Great Britain.
+
+All three countries perform notably worse in the Winter Olympics compared to the Summer Olympics. This disparity can be attributed to several factors. First, there have been only 24 Winter Olympics compared to 30 Summer Olympics, which limits the opportunities to earn medals in winter events. Additionally, the Winter Olympics feature fewer sports and events than the Summer Games, resulting in fewer overall medal opportunities. Moreover, nations like France and Great Britain have historically specialized in Summer Olympic sports, such as athletics, swimming, and cycling, which are not represented in the Winter Olympics.
+
+Geographic and climatic factors also play a role in the medal disparities. While Switzerland, with its mountainous terrain, performs relatively better in Winter Olympic sports, France and Great Britain do not have the same geographical advantages, which may limit their success in winter disciplines. Lastly, the Winter Olympics tend to attract less global investment and athlete participation compared to the Summer Olympics. This lack of focus on winter sports likely contributes to the weaker overall performance in the Winter Olympics for all three nations.
+
+**Question 2: How do the medal distributions (gold, silver, and bronze) compare between the top three countries in the Summer and Winter Olympics?**
+
+```{r}
+# Manually specify the top 3 ranked countries for Summer and Winter Olympics
+top_summer_countries <- summer_olympics_table %>%
+  filter(NOC %in% c("United States", "Soviet Union*", "China")) %>%
+  mutate(Season = "Summer") %>%
+  mutate(NOC = case_when(
+    NOC == "United States" ~ "United States (1)",
+    NOC == "Soviet Union*" ~ "Soviet Union* (2)",
+    NOC == "China" ~ "China (3)"
+  ))
+
+top_winter_countries <- winter_olympics_table %>%
+  filter(NOC %in% c("Norway", "United States", "Germany")) %>%
+  mutate(Season = "Winter") %>%
+  mutate(NOC = case_when(
+    NOC == "Norway" ~ "Norway (1)",
+    NOC == "United States" ~ "United States (2)",
+    NOC == "Germany" ~ "Germany (3)"
+  ))
+
+# Combine the two datasets
+top_countries_combined <- bind_rows(top_summer_countries, top_winter_countries)
+
+# Ensure medal counts are numeric (remove commas if present)
+top_countries_combined <- top_countries_combined %>%
+  mutate(
+    Gold = as.numeric(gsub(",", "", Gold)),
+    Silver = as.numeric(gsub(",", "", Silver)),
+    Bronze = as.numeric(gsub(",", "", Bronze))
+  )
+
+# Reshape the data for visualization
+top_countries_combined_long <- top_countries_combined %>%
+  pivot_longer(
+    cols = c(Gold, Silver, Bronze),
+    names_to = "Medal_Type",
+    values_to = "Count"
+  ) %>%
+  mutate(
+    Medal_Type = factor(Medal_Type, levels = c("Gold", "Silver", "Bronze")),
+    NOC = factor(NOC, levels = c(
+      "United States (1)", "Soviet Union* (2)", "China (3)",
+      "Norway (1)", "United States (2)", "Germany (3)"
+    )) # Ensure correct order
+  )
+
+# Generate the bar plot
+ggplot(top_countries_combined_long, aes(x = NOC, y = Count, fill = Medal_Type)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  facet_wrap(~Season, scales = "free_x") +
+  scale_fill_manual(values = c("Gold" = "gold", "Silver" = "gray", "Bronze" = "brown")) +
+  scale_y_continuous(limits = c(0, 1200), breaks = seq(0, 1200, by = 100)) +
+  labs(
+    title = "Medal Distribution for Top 3 Countries in Summer and Winter Olympics",
+    x = "Country (NOC)",
+    y = "Medal Count",
+    fill = "Medal Type"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+**Interpretation**
+
+The graph visualizes the medal distributions (gold, silver, and bronze) for the top three countries in the Summer and Winter Olympics. The selection of the top three countries was based on their pre-ranked positions in the Olympic medal table for each season, as provided in the data.
+
+For the Summer Olympics, the United States leads by a significant margin, earning 1,105 gold medals, followed by the Soviet Union (395) and China (303). The United States also surpasses its competitors in silver and bronze medals, highlighting its consistent dominance across all medal types. 
+
+For the Winter Olympics, Norway takes the top spot with 148 gold medals, followed by the United States (114) and Germany (104). Interestingly, Norway's dominance is not limited to gold medals; it also performs well in silver and bronze categories despite being a smaller country in terms of population and resources. The United States and Germany, while closely matched in overall medal counts, lag slightly behind Norway in gold medal achievements, reflecting Norway's specialization in Winter Olympic sports such as skiing and biathlon.
+
+The data clearly demonstrates that the United States is a global powerhouse in the Summer Olympics, while Norway dominates the Winter Olympics due to its focus on winter sports. The rankings and medal counts for the Winter Olympics are much closer than those for the Summer Olympics, indicating a more competitive field. These insights highlight how geography, resource allocation, and sports specialization influence medal outcomes in both Olympic seasons.
+
+**Question 3:  Is there a relationship between the number of participations and the total medals won?** 
+
+```{r}
+# Clean and convert Combined_No and Combined_Total to numeric
+first_table_cleaned <- first_table_cleaned %>%
+  mutate(
+    Combined_No = as.numeric(gsub(",", "", Combined_No)), 
+    Combined_Total = as.numeric(gsub(",", "", Combined_Total)) 
+  )
+
+# Scatter plot with trend line
+ggplot(first_table_cleaned, aes(x = Combined_No, y = Combined_Total)) +
+  geom_point(color = "blue") + 
+  geom_smooth(method = "lm", color = "red", se = FALSE) + 
+  labs(
+    title = "Relationship Between Olympic Participations and Total Medals",
+    x = "Number of Olympic Participations (Combined)",
+    y = "Total Medals Won (Combined)"
+  ) +
+  theme_minimal()
+
+# Second graph: Filter out the outlier based on Combined_Total
+filtered_table <- first_table_cleaned %>%
+  filter(Combined_Total < 1000)  
+
+# Scatter plot with trend line (without outlier)
+ggplot(filtered_table, aes(x = Combined_No, y = Combined_Total)) +
+  geom_point(color = "blue") + 
+  geom_smooth(method = "lm", color = "red", se = FALSE) + 
+  labs(
+    title = "Relationship Between Olympic Participations and Total Medals",
+    x = "Number of Olympic Participations (Combined)",
+    y = "Total Medals Won (Combined)"
+  ) +
+  theme_minimal()
+```
+
+**Interpretation**
+
+The scatter plot demonstrates the relationship between the number of Olympic participations and the total number of medals won by countries across both Summer and Winter Games. There is a clear positive correlation between these two variables, as countries with more participations tend to win more medals. This trend is illustrated by the upward slope of the red regression line, which indicates that increased participation is generally associated with a higher medal count.
+
+However, there is significant variability among countries. Some countries, such as the United States and the Soviet Union, are clear outliers, achieving exceptional medal counts compared to others with similar or fewer participations. These outliers highlight the impact of other factors, such as resource allocation, sports infrastructure, and historical dominance in specific sports. Conversely, several countries participate frequently but win relatively few medals, suggesting limited competitive success or a lack of specialization in medal-rich sports.
+
+Overall, while the number of participations is an important predictor of medal counts, it is not the sole determinant of success. Historical dominance, economic investment in sports, and athlete development programs play critical roles in shaping a country's performance. This analysis underscores the complexity of factors influencing Olympic success, beyond mere participation frequency.
+
+**Question 4: Is there a relationship between the number of gold medals won and the total number of medals won?**
+```{r}
+# Clean and convert Combined_Gold and Combined_Total to numeric
+first_table_cleaned <- first_table_cleaned %>%
+  mutate(
+    Combined_Gold = as.numeric(gsub(",", "", Combined_Gold)), 
+    Combined_Total = as.numeric(gsub(",", "", Combined_Total))
+  )
+
+# Scatter plot with trend line
+ggplot(first_table_cleaned, aes(x = Combined_Gold, y = Combined_Total)) +
+  geom_point(color = "blue") + 
+  geom_smooth(method = "lm", color = "red", se = FALSE) + 
+  labs(
+    title = "Relationship Between Gold Medals and Total Medals",
+    x = "Number of Gold Medals (Combined)",
+    y = "Total Medals Won (Combined)"
+  ) +
+  theme_minimal()
+
+# Second graph: Filter out the outlier based on Combined_Gold
+filtered_table <- first_table_cleaned %>%
+  filter(Combined_Gold < 300)  
+
+# Scatter plot with trend line (without outlier)
+ggplot(filtered_table, aes(x = Combined_Gold, y = Combined_Total)) +
+  geom_point(color = "blue") + 
+  geom_smooth(method = "lm", color = "red", se = FALSE) + 
+  labs(
+    title = "Relationship Between Gold Medals and Total Medals",
+    x = "Number of Gold Medals (Combined)",
+    y = "Total Medals Won (Combined)"
+  ) +
+  theme_minimal()
+```
+
