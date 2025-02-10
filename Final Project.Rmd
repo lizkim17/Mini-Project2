@@ -282,7 +282,7 @@ ggplot(filtered_table, aes(x = Combined_No, y = Combined_Total)) +
 
 **Interpretation**
 
-The scatter plot demonstrates the relationship between the number of Olympic participations and the total number of medals won by countries across both Summer and Winter Games. There is a clear positive correlation between these two variables, as countries with more participations tend to win more medals. This trend is illustrated by the upward slope of the red regression line, which indicates that increased participation is generally associated with a higher medal count.
+The scatter plot demonstrates the relationship between the number of Olympic participations and the total number of medals won by countries across both Summer and Winter Olympics. There is a clear positive correlation between these two variables, as countries with more participations tend to win more medals. This trend is illustrated by the upward slope of the red regression line, which indicates that increased participation is generally associated with a higher medal count.
 
 However, there is significant variability among countries. Some countries, such as the United States and the Soviet Union, are clear outliers, achieving exceptional medal counts compared to others with similar or fewer participations. These outliers highlight the impact of other factors, such as resource allocation, sports infrastructure, and historical dominance in specific sports. Conversely, several countries participate frequently but win relatively few medals, suggesting limited competitive success or a lack of specialization in medal-rich sports.
 
