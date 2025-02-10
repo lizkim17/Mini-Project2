@@ -324,3 +324,10 @@ ggplot(filtered_table, aes(x = Combined_Gold, y = Combined_Total)) +
   theme_minimal()
 ```
 
+**Interpretation**
+
+The scatter plot explores the relationship between the number of gold medals won and the total medal count achieved by countries across the Summer and Winter Olympics. The analysis reveals a strong positive correlation, as demonstrated by the linear regression line. Countries with a higher number of gold medals typically exhibit higher total medal counts, indicating that gold-medal performance often coincides with overall success in the Olympics.
+
+Despite this general trend, there are notable variations among countries. Some nations, such as the United States, stand out as exceptional performers, securing a disproportionate number of total medals relative to their gold medal count. This observation highlights their ability to achieve a balanced performance across all medal types (gold, silver, and bronze), suggesting a diverse and competitive athletic portfolio. On the other hand, countries with fewer total medals may have achieved fewer golds but remain competitive in silver and bronze categories, demonstrating depth in participation but not necessarily dominance.
+
+This analysis emphasizes that while gold medal performance is a strong indicator of total Olympic success, it is not entirely deterministic. Factors such as participation in diverse events, athlete preparation, and strategic emphasis on specific sports can influence a country’s ability to consistently perform at the highest level. 
