@@ -2,7 +2,7 @@
 title: "Final Report"
 author: "Liz"
 date: "2025-02-07"
-output: pdf_document
+output: word_document
 ---
 
 ```{r setup, include=FALSE}
