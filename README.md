@@ -16,5 +16,4 @@ Separate public repository for Mini-Project 2 which includes:
 2.  Final-Report.docx: Word document version of the final report.
 3.  Mini-Project2.Rproj: R Project file for this project.
 4.  README.md: File providing information about the project.
-5.  assessment.md: Markdown file for project assessment.
-6.  Other csv files for tables I created.
+5.  Other csv files for tables I created.
