@@ -141,29 +141,32 @@ top_countries_long <- top_countries %>%
   ) %>%
   mutate(
     Count = as.numeric(Count), 
-    Medal_Type = factor(Medal_Type, levels = c("Gold", "Silver", "Bronze")) 
-  )  
+    Medal_Type = fct_relevel(Medal_Type, "Gold", "Silver", "Bronze"), 
+    Medal_Type = fct_recode(Medal_Type, "Gold Medal" = "Gold", "Silver Medal" = "Silver", "Bronze Medal" = "Bronze")  
+  )
 
 # Bar Plot for Summer vs Winter medals
 ggplot(top_countries_long, aes(x = Medal_Type, y = Count, fill = Medal_Type)) +
   geom_bar(stat = "identity", position = "dodge") +
   facet_grid(~ Season + Team) + 
   scale_y_continuous(breaks = scales::pretty_breaks(n = 10)) + 
-  scale_fill_manual(values = c("Gold" = "gold", "Silver" = "gray70", "Bronze" = "sienna")) + 
+  scale_fill_manual(values = c("Gold Medal" = "gold", "Silver Medal" = "gray70", "Bronze Medal" = "sienna")) + 
   labs(
     title = "Summer vs Winter Olympic Medals for Top Countries",
     x = "Medal Type",
     y = "Medal Count",
     fill = "Medal Type"
   ) +
-  theme_minimal()
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+
 
 # Bar Plot for Summer vs Winter medals Version 2
 ggplot(top_countries_long, aes(x = Medal_Type, y = Count, fill = Medal_Type)) +
   geom_bar(stat = "identity", position = "dodge") +
   facet_wrap(Season ~ Team, ncol = 2, scales = "free_y") +  
   scale_y_continuous(breaks = scales::pretty_breaks(n = 10)) + 
-  scale_fill_manual(values = c("Gold" = "gold", "Silver" = "gray70", "Bronze" = "sienna")) +  # Medal colors
+  scale_fill_manual(values = c("Gold Medal" = "gold", "Silver Medal" = "gray70", "Bronze Medal" = "sienna")) +  # Medal colors
   labs(
     title = "Summer vs Winter Olympic Medals for Top Countries",
     x = "Medal Type",
